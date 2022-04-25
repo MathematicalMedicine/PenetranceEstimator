@@ -1,0 +1,13 @@
+#!/usr/bin/env python3
+"""GUI entrypoint to the betaHat app."""
+
+import sys
+from bhgui import BetaHatAppMain
+
+from PyQt5 import QtWidgets
+
+app = QtWidgets.QApplication(sys.argv)
+appmain = BetaHatAppMain()
+appmain.show()
+appmain.raise_()
+sys.exit(app.exec_())
