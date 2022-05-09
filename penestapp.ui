@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Penetrance Estimator</string>
   </property>
   <widget class="QWidget" name="MainWindowWidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,2">
@@ -246,7 +246,7 @@
      </widget>
     </item>
     <item>
-     <widget class="BetaHatPlot" name="PlotWidget" native="true">
+     <widget class="PenEstPlot" name="PlotWidget" native="true">
       <property name="minimumSize">
        <size>
         <width>640</width>
@@ -254,7 +254,7 @@
        </size>
       </property>
       <property name="styleSheet">
-       <string notr="true">background-image: url(&quot;/Users/jcv001/wrqn/betahat/Figure_1.png&quot;);</string>
+       <string notr="true">background-image: url(&quot;Figure_1.png&quot;);</string>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_8"/>
      </widget>
@@ -264,9 +264,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>BetaHatPlot</class>
+   <class>PenEstPlot</class>
    <extends>QWidget</extends>
-   <header>bhgui.h</header>
+   <header>penestGUI.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

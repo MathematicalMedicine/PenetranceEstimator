@@ -1,7 +1,7 @@
-betaApp
-=======
+Penetrance Estimator
+====================
 
-This is a very simple app for calculating and displaying betaHat and betaHatStar given variables _alpha_, _beta_, _s_, and _k_.
+This is a very simple app for calculating and displaying (f-tilde single) and (f-tilde) given variables _alpha_, _beta_, _s_, and _k_.
 
 
 Requirements
@@ -15,8 +15,8 @@ Requirements
 Operation
 ---------
 
-1. Start the program by running `python3 BetaHatApp`.
-2. Select which model for calculating betaHat and betaHatStar is desired.
+1. Start the program by running `python3 PenEstApp`.
+2. Select which model for calculating (f-tilde single) and (f-tilde) is desired.
 3. Enter in values for _alpha_, _beta_, and _s_ as desired. If multiple possible values (for plotting along the X-axis) are desired, this can be done by providing a comma-separated list. Only one variable may have multiple values at any given time.
 4. Press the "Refresh Plot" button.
 

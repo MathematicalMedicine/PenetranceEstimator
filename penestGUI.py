@@ -1,4 +1,4 @@
-"""GUI front-end to the betaHat app."""
+"""GUI front-end to the Penetrance Estimator app."""
 
 from pathlib import Path
 from ast import literal_eval
@@ -9,19 +9,21 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from cycler import cycler
 
-from betaApp import calc_stats, format_stats, isiter
+from penEst import calc_stats, format_stats, isiter
 
+FTILDE = "f̃"
+matplotlib.rcParams["text.usetex"] = True
 
 # Canvas and MPL widget management inspired by/borrowed from
 # https://stackoverflow.com/a/44029435
 
-class BetaHatCanvas(FigureCanvasQTAgg):
-    """matplotlib canvas and figure for the betaHat app."""
+class PenEstCanvas(FigureCanvasQTAgg):
+    """matplotlib canvas and figure for the Penetrance Estimator app."""
     
     def __init__(self):
         self.figure = Figure()
-        self.ax_betaHat = self.figure.add_subplot(2, 1, 1)
-        self.ax_betaHatStar = self.figure.add_subplot(2, 1, 2)
+        self.ax_ftildesingle = self.figure.add_subplot(2, 1, 1)
+        self.ax_ftilde = self.figure.add_subplot(2, 1, 2)
         FigureCanvasQTAgg.__init__(self, self.figure)
         self.setSizePolicy(QtW.QSizePolicy.Expanding, QtW.QSizePolicy.Expanding)
         self.updateGeometry()
@@ -31,12 +33,12 @@ class BetaHatCanvas(FigureCanvasQTAgg):
     
     def plot_data(self, stats):
         """Given the X-axis data and two lists of Y-axis datasets - one for
-        betaHat, one for betaHatStar - clears our axes and plots the new data.
+        ftildesingle, one for ftilde - clears our axes and plots the new data.
         
         """
         
-        self.ax_betaHat.clear()
-        self.ax_betaHatStar.clear()
+        self.ax_ftildesingle.clear()
+        self.ax_ftilde.clear()
         
         # Which of our variables is an iterable (and thus our X-axis)?
         var_xaxis = "alpha" # default to alpha if none are iterable
@@ -45,10 +47,11 @@ class BetaHatCanvas(FigureCanvasQTAgg):
         
         self.restyleaxes(var_xaxis, stats[var_xaxis])
         
+        # FIXME: change these in penEst.py eventually
         for yval in stats['stats']['betahat'].values():
-            self.ax_betaHat.plot(stats[var_xaxis], yval)
+            self.ax_ftildesingle.plot(stats[var_xaxis], yval)
         for yval in stats['stats']['betahatstar'].values():
-            self.ax_betaHatStar.plot(stats[var_xaxis], yval)
+            self.ax_ftilde.plot(stats[var_xaxis], yval)
         
         self.draw()
     
@@ -57,61 +60,64 @@ class BetaHatCanvas(FigureCanvasQTAgg):
         # Needed as separate routine because replotting resets them. Grr.
         
         # Axes names
-        #self.ax_betaHat.set_xlabel(varname)
+        #self.ax_ftildesingle.set_xlabel(varname)
                 # Not bothering to set this one as default layout covers it
                 # anyways.
-        self.ax_betaHatStar.set_xlabel(var_xaxis)
-        self.ax_betaHat.set_ylabel("Beta_Hat")
-        self.ax_betaHatStar.set_ylabel("Beta_HatStar")
+        self.ax_ftilde.set_xlabel(var_xaxis)
+        # FIXME NOTE: see if the below can be done via TeX formatting; that
+        # might be more appropriate
+        self.ax_ftildesingle.set_ylabel(r"$\tilde{f}_{single}$")
+                # FIXME: 'single' should be subscripted
+        self.ax_ftilde.set_ylabel(r"$\tilde{f}$")
         
         # View limits
         # yaxis is always (0, 1). Usually the same is true of xaxis as well,
         # UNLESS we're using <s> as the xaxis. So we look at all current values
         # for x and take the largest one if that value > 1.
         bh_xmax = max(1, *xaxis_vals)
-        self.ax_betaHat.set_xlim(xmin=0, xmax=bh_xmax)
-        self.ax_betaHatStar.set_xlim(xmin=0, xmax=bh_xmax)
-        self.ax_betaHat.set_ylim(ymin=0, ymax=1)
-        self.ax_betaHatStar.set_ylim(ymin=0, ymax=1)
+        self.ax_ftildesingle.set_xlim(xmin=0, xmax=bh_xmax)
+        self.ax_ftilde.set_xlim(xmin=0, xmax=bh_xmax)
+        self.ax_ftildesingle.set_ylim(ymin=0, ymax=1)
+        self.ax_ftilde.set_ylim(ymin=0, ymax=1)
         
         # Property cyclers
         colors = cycler("color", ["k", "r", "g", "c", "gray", "m", "y", "b"])
         markers = cycler("marker", ["o", "x", "*", "s", "P", "D", "v", "^"])
         # We do the combination explicitly each time so that our plots don't
         # end up exhausting a single cycler. One cycler per plot!
-        self.ax_betaHat.set_prop_cycle(colors + markers)
-        self.ax_betaHatStar.set_prop_cycle(colors + markers)
+        self.ax_ftildesingle.set_prop_cycle(colors + markers)
+        self.ax_ftilde.set_prop_cycle(colors + markers)
 
-class BetaHatPlot(QtW.QWidget):
+class PenEstPlot(QtW.QWidget):
     """Widget representing the space for a matplotlib canvas."""
     
     def __init__(self, parent):
         super().__init__(parent)
         # FIXME: at this point, remove the stylesheet
-        self.canvas = BetaHatCanvas()
+        self.canvas = PenEstCanvas()
         self.vbl = QtW.QVBoxLayout()
         self.vbl.addWidget(self.canvas)
         self.setLayout(self.vbl)
 
 
 UI_MainWindow = uic.loadUiType(str(
-        Path(__file__).parent.joinpath("betaApp.ui")))[0]
-class BetaHatAppMain(QtW.QMainWindow, UI_MainWindow):
+        Path(__file__).parent.joinpath("penestapp.ui")))[0]
+class PenEstAppMain(QtW.QMainWindow, UI_MainWindow):
     """Main (only) window for a GUI program for calculating and plotting
-    betaHat statistics.
+    our penetrance estimations.
     
     """
     
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.setWindowTitle("betaHat/betaHatStar")
+        self.setWindowTitle("Penetrance Estimator")
         
         # Stats for the current plot
         self.stats = None
         
         # showing an initial plot (using values that are embedded in
-        # betaApp.ui) so there's something shinyesque to look at
+        # penestapp.ui) so there's something shinyesque to look at
         self.refreshPlot()
     
     @property

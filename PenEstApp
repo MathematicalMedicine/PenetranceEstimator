@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""GUI entrypoint to the betaHat app."""
+"""GUI entrypoint to Penetrance Estimator."""
 
 import sys
-from bhgui import BetaHatAppMain
+from penestGUI import PenEstAppMain
 
 from PyQt5 import QtWidgets
 
 app = QtWidgets.QApplication(sys.argv)
-appmain = BetaHatAppMain()
+appmain = PenEstAppMain()
 appmain.show()
 appmain.raise_()
 sys.exit(app.exec_())
