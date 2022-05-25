@@ -7,8 +7,8 @@ Usage:
 
 from setuptools import setup
 
-APP = ['BetaHatApp']
-DATA_FILES = ["betaApp.ui"]
+APP = ['PenEstApp']
+DATA_FILES = ["penestapp.ui"]
 OPTIONS = {}
 
 setup(

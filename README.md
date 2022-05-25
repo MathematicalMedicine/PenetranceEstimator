@@ -1,7 +1,7 @@
 Penetrance Estimator
 ====================
 
-This is a very simple app for calculating and displaying (f-tilde single) and (f-tilde) given variables _alpha_, _beta_, _s_, and _k_.
+This is a very simple app for calculating and displaying the approximately ascertainment-corrected penetrance estimate (hereafter _f-tilde_) and the corresponding uncorrected penetrance estimate (hereafter _f-tilde-star_) given variables _alpha_, _beta_, _s_, and _k_.
 
 
 Requirements
@@ -16,7 +16,7 @@ Operation
 ---------
 
 1. Start the program by running `python3 PenEstApp`.
-2. Select which model for calculating (f-tilde single) and (f-tilde) is desired.
+2. Select which model for calculating _f-tilde_ is desired.
 3. Enter in values for _alpha_, _beta_, and _s_ as desired. If multiple possible values (for plotting along the X-axis) are desired, this can be done by providing a comma-separated list. Only one variable may have multiple values at any given time.
 4. Press the "Refresh Plot" button.
 

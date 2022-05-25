@@ -11,7 +11,6 @@ from cycler import cycler
 
 from penEst import calc_stats, format_stats, isiter
 
-FTILDE = "f̃"
 matplotlib.rcParams["text.usetex"] = True
 
 # Canvas and MPL widget management inspired by/borrowed from
@@ -22,8 +21,8 @@ class PenEstCanvas(FigureCanvasQTAgg):
     
     def __init__(self):
         self.figure = Figure()
-        self.ax_ftildesingle = self.figure.add_subplot(2, 1, 1)
-        self.ax_ftilde = self.figure.add_subplot(2, 1, 2)
+        self.ax_ftilde = self.figure.add_subplot(2, 1, 1)
+        self.ax_ftildestar = self.figure.add_subplot(2, 1, 2)
         FigureCanvasQTAgg.__init__(self, self.figure)
         self.setSizePolicy(QtW.QSizePolicy.Expanding, QtW.QSizePolicy.Expanding)
         self.updateGeometry()
@@ -33,12 +32,12 @@ class PenEstCanvas(FigureCanvasQTAgg):
     
     def plot_data(self, stats):
         """Given the X-axis data and two lists of Y-axis datasets - one for
-        ftildesingle, one for ftilde - clears our axes and plots the new data.
+        ftilde, one for ftilde - clears our axes and plots the new data.
         
         """
         
-        self.ax_ftildesingle.clear()
         self.ax_ftilde.clear()
+        self.ax_ftildestar.clear()
         
         # Which of our variables is an iterable (and thus our X-axis)?
         var_xaxis = "alpha" # default to alpha if none are iterable
@@ -49,9 +48,9 @@ class PenEstCanvas(FigureCanvasQTAgg):
         
         # FIXME: change these in penEst.py eventually
         for yval in stats['stats']['betahat'].values():
-            self.ax_ftildesingle.plot(stats[var_xaxis], yval)
-        for yval in stats['stats']['betahatstar'].values():
             self.ax_ftilde.plot(stats[var_xaxis], yval)
+        for yval in stats['stats']['betahatstar'].values():
+            self.ax_ftildestar.plot(stats[var_xaxis], yval)
         
         self.draw()
     
@@ -60,33 +59,30 @@ class PenEstCanvas(FigureCanvasQTAgg):
         # Needed as separate routine because replotting resets them. Grr.
         
         # Axes names
-        #self.ax_ftildesingle.set_xlabel(varname)
+        #self.ax_ftilde.set_xlabel(varname)
                 # Not bothering to set this one as default layout covers it
                 # anyways.
-        self.ax_ftilde.set_xlabel(var_xaxis)
-        # FIXME NOTE: see if the below can be done via TeX formatting; that
-        # might be more appropriate
-        self.ax_ftildesingle.set_ylabel(r"$\tilde{f}_{single}$")
-                # FIXME: 'single' should be subscripted
+        self.ax_ftildestar.set_xlabel(var_xaxis)
         self.ax_ftilde.set_ylabel(r"$\tilde{f}$")
+        self.ax_ftildestar.set_ylabel(r"$\tilde{f}^*$")
         
         # View limits
         # yaxis is always (0, 1). Usually the same is true of xaxis as well,
         # UNLESS we're using <s> as the xaxis. So we look at all current values
         # for x and take the largest one if that value > 1.
         bh_xmax = max(1, *xaxis_vals)
-        self.ax_ftildesingle.set_xlim(xmin=0, xmax=bh_xmax)
         self.ax_ftilde.set_xlim(xmin=0, xmax=bh_xmax)
-        self.ax_ftildesingle.set_ylim(ymin=0, ymax=1)
+        self.ax_ftildestar.set_xlim(xmin=0, xmax=bh_xmax)
         self.ax_ftilde.set_ylim(ymin=0, ymax=1)
+        self.ax_ftildestar.set_ylim(ymin=0, ymax=1)
         
         # Property cyclers
         colors = cycler("color", ["k", "r", "g", "c", "gray", "m", "y", "b"])
         markers = cycler("marker", ["o", "x", "*", "s", "P", "D", "v", "^"])
         # We do the combination explicitly each time so that our plots don't
         # end up exhausting a single cycler. One cycler per plot!
-        self.ax_ftildesingle.set_prop_cycle(colors + markers)
         self.ax_ftilde.set_prop_cycle(colors + markers)
+        self.ax_ftildestar.set_prop_cycle(colors + markers)
 
 class PenEstPlot(QtW.QWidget):
     """Widget representing the space for a matplotlib canvas."""
