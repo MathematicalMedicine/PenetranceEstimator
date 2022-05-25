@@ -11,7 +11,8 @@ from cycler import cycler
 
 from penEst import calc_stats, format_stats, isiter
 
-matplotlib.rcParams["text.usetex"] = True
+#matplotlib.rcParams["text.usetex"] = True
+        # turns out this was unnecessary, woo
 
 # Canvas and MPL widget management inspired by/borrowed from
 # https://stackoverflow.com/a/44029435
