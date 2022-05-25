@@ -3,10 +3,10 @@
 block_cipher = None
 
 
-a = Analysis(['BetaHatApp'],
-             pathex=['/System/Volumes/Data/gdvielandlab/jcv001/betahat'],
+a = Analysis(['PenEstApp'],
+             pathex=[],
              binaries=[],
-             datas=[('betaApp.ui', '.'), ],
+             datas=[('penestapp.ui', '.'), ],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -21,7 +21,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='BetaHatApp',
+          name='PenEstApp',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -34,8 +34,8 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='BetaHatApp')
+               name='PenEstApp')
 app = BUNDLE(coll,
-             name='BetaHatApp.app',
+             name='PenEstApp.app',
              icon=None,
              bundle_identifier=None)

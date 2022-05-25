@@ -4,10 +4,10 @@
 block_cipher = None
 
 
-a = Analysis(['BetaHatApp'],
+a = Analysis(['PenEstApp'],
              pathex=[],
              binaries=[],
-             datas=[('betaApp.ui', '.'), ],
+             datas=[('penestapp.ui', '.'), ],
              hiddenimports=[],
              hookspath=[],
              hooksconfig={},
@@ -27,7 +27,7 @@ exe = EXE(pyz,
           a.datas,
           [],
           #exclude_binaries=True,
-          name='BetaHatApp',
+          name='PenEstApp',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -44,4 +44,4 @@ exe = EXE(pyz,
 #               strip=False,
 #               upx=True,
 #               upx_exclude=[],
-#               name='BetaHatApp')
+#               name='PenEstApp')
