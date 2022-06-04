@@ -152,6 +152,7 @@ class PenEstFigureGroup(QtW.QGroupBox):
         
         filterstring = ' '.join([f"*.{ext}" for ext in
                 self.PlotWidget.canvas.get_supported_filetypes().keys()])
+        filterstring = f"*.png {filterstring}"
         fileselect = QtW.QFileDialog.getSaveFileName(self,
                 "Save Image", filter=f"Images ({filterstring})")
         
