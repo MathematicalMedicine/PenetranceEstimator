@@ -47,6 +47,12 @@ FTS = r"$\tilde{f}^*$"
 ALPHA = r"$\alpha$"
 BETA = r"$\beta$"
 
+# Shorthand for our data printing options context.
+DATA_PRINT_OPTIONS = pd.option_context(
+        'display.max_rows', None,
+        'display.max_columns', None,
+        'display.precision', 4)
+
 def nCr(n,r):
     return factorial(n) / factorial(r) / factorial(n-r)
 
@@ -277,10 +283,7 @@ def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
     
     results = pd.DataFrame(stats)
     if to_stdout:
-        with pd.option_context(
-                'display.max_rows', None,
-                'display.max_columns', None,
-                'display.precision', 4):
+        with DATA_PRINT_OPTIONS:
             print(results)
     
     return results
@@ -317,8 +320,7 @@ def generate_and_display_test_figure(fig1df, fig2df):
     plt.axhline(0.5, alpha=0.5, dashes=(5,2))
     
     plt.subplot(2, 2, 4)
-    sns.lineplot(data=fig2df.pivot(ALPHA, "k", FTS),
-            markers=True)
+    sns.lineplot(data=fig2df.pivot(ALPHA, "k", FTS), markers=True)
     plt.ylabel(FTS, rotation=0)
     plt.ylim([0,1])
     plt.axhline(0.5, alpha=0.5, dashes=(5,2))
