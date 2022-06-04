@@ -226,7 +226,7 @@
                 <number>1000</number>
                </property>
                <property name="value">
-                <number>25</number>
+                <number>100</number>
                </property>
               </widget>
              </item>
@@ -529,8 +529,8 @@
    <slot>refreshPlot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>111</x>
-     <y>524</y>
+     <x>131</x>
+     <y>619</y>
     </hint>
     <hint type="destinationlabel">
      <x>174</x>
@@ -545,12 +545,12 @@
    <slot>savePlotImage()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>128</x>
-     <y>560</y>
+     <x>148</x>
+     <y>648</y>
     </hint>
     <hint type="destinationlabel">
-     <x>372</x>
-     <y>347</y>
+     <x>376</x>
+     <y>693</y>
     </hint>
    </hints>
   </connection>
@@ -561,8 +561,8 @@
    <slot>saveStatsFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>146</x>
-     <y>585</y>
+     <x>148</x>
+     <y>677</y>
     </hint>
     <hint type="destinationlabel">
      <x>408</x>
@@ -577,8 +577,8 @@
    <slot>refreshPlot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>122</x>
-     <y>240</y>
+     <x>142</x>
+     <y>271</y>
     </hint>
     <hint type="destinationlabel">
      <x>247</x>
@@ -593,8 +593,8 @@
    <slot>savePlotImage()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>147</x>
-     <y>274</y>
+     <x>148</x>
+     <y>300</y>
     </hint>
     <hint type="destinationlabel">
      <x>310</x>
@@ -609,8 +609,8 @@
    <slot>saveStatsFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>126</x>
-     <y>303</y>
+     <x>146</x>
+     <y>329</y>
     </hint>
     <hint type="destinationlabel">
      <x>415</x>
