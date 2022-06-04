@@ -2,14 +2,18 @@
 
 from pathlib import Path
 from ast import literal_eval
+from enum import Enum
 
 from PyQt5 import uic, QtWidgets as QtW
 import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from cycler import cycler
 
-from penEst import calc_stats, format_stats, isiter
+import pe
+
+class PlotType(Enum):
+    numfam = 1
+    alpha = 2
 
 #matplotlib.rcParams["text.usetex"] = True
         # turns out this was unnecessary, woo
@@ -20,7 +24,7 @@ from penEst import calc_stats, format_stats, isiter
 class PenEstCanvas(FigureCanvasQTAgg):
     """matplotlib canvas and figure for the Penetrance Estimator app."""
     
-    def __init__(self):
+    def __init__(self, plottype=PlotType.numfam):
         self.figure = Figure()
         self.ax_ftilde = self.figure.add_subplot(2, 1, 1)
         self.ax_ftildestar = self.figure.add_subplot(2, 1, 2)
@@ -28,62 +32,35 @@ class PenEstCanvas(FigureCanvasQTAgg):
         self.setSizePolicy(QtW.QSizePolicy.Expanding, QtW.QSizePolicy.Expanding)
         self.updateGeometry()
     
-    def set_xaxis_var(self, varname):
-        """Updates our plot to use a different X-axis variable."""
-    
-    def plot_data(self, stats):
-        """Given the X-axis data and two lists of Y-axis datasets - one for
-        ftilde, one for ftilde - clears our axes and plots the new data.
-        
-        """
+    def plot_data(self, df):
+        """Given our dataframe, clears our axes and plots the new data. """
         
         self.ax_ftilde.clear()
         self.ax_ftildestar.clear()
         
-        # Which of our variables is an iterable (and thus our X-axis)?
-        var_xaxis = "alpha" # default to alpha if none are iterable
-        for varclass in ("alpha", "beta", "s"):
-            var_xaxis = varclass if isiter(stats[varclass]) else var_xaxis
+        # Are we Figure 1 or Figure 2?
+        if df['NumSims'][0] is not None:
+            # Sinaplot (figure 1)
+            sinaplot(x="N", y=pe.FT, data=df, ax=self.ax_ftilde,
+                    edgecolor="black", alpha=.5, violin=False)
+            sinaplot(x="N", y=pe.FTS, data=df, ax=self.ax_ftildestar,
+                    edgecolor="black", alpha=.5, violin=False)
+        else:
+            # Lineplot (figure 2)
+            sns.lineplot(data=df.pivot(pe.ALPHA, "k", pe.FT),
+                    ax=self.ax_ftilde, markers=True)
+            sns.lineplot(data=df.pivot(pe.ALPHA, "k", pe.FTS),
+                    ax=self.ax_ftildestar, markers=True)
         
-        self.restyleaxes(var_xaxis, stats[var_xaxis])
-        
-        # FIXME: change these in penEst.py eventually
-        for yval in stats['stats']['betahat'].values():
-            self.ax_ftilde.plot(stats[var_xaxis], yval)
-        for yval in stats['stats']['betahatstar'].values():
-            self.ax_ftildestar.plot(stats[var_xaxis], yval)
-        
-        self.draw()
-    
-    def restyleaxes(self, var_xaxis, xaxis_vals):
-        """Sets up the axes styling our plots should have."""
-        # Needed as separate routine because replotting resets them. Grr.
-        
-        # Axes names
-        #self.ax_ftilde.set_xlabel(varname)
-                # Not bothering to set this one as default layout covers it
-                # anyways.
-        self.ax_ftildestar.set_xlabel(var_xaxis)
-        self.ax_ftilde.set_ylabel(r"$\tilde{f}$")
-        self.ax_ftildestar.set_ylabel(r"$\tilde{f}^*$")
-        
-        # View limits
-        # yaxis is always (0, 1). Usually the same is true of xaxis as well,
-        # UNLESS we're using <s> as the xaxis. So we look at all current values
-        # for x and take the largest one if that value > 1.
-        bh_xmax = max(1, *xaxis_vals)
-        self.ax_ftilde.set_xlim(xmin=0, xmax=bh_xmax)
-        self.ax_ftildestar.set_xlim(xmin=0, xmax=bh_xmax)
+        self.ax_ftilde.set_ylabel(pe.FT, rotation=0)
+        self.ax_ftildestar.set_ylabel(pe.FTS, rotation=0)
         self.ax_ftilde.set_ylim(ymin=0, ymax=1)
         self.ax_ftildestar.set_ylim(ymin=0, ymax=1)
+        self.ax_ftilde.axhline(0.5, alpha=0.5, dashes=(5,2))
+        self.ax_ftildestar.axhline(0.5, alpha=0.5, dashes=(5,2))
         
-        # Property cyclers
-        colors = cycler("color", ["k", "r", "g", "c", "gray", "m", "y", "b"])
-        markers = cycler("marker", ["o", "x", "*", "s", "P", "D", "v", "^"])
-        # We do the combination explicitly each time so that our plots don't
-        # end up exhausting a single cycler. One cycler per plot!
-        self.ax_ftilde.set_prop_cycle(colors + markers)
-        self.ax_ftildestar.set_prop_cycle(colors + markers)
+        self.tight_layout()
+        self.draw()
 
 class PenEstPlot(QtW.QWidget):
     """Widget representing the space for a matplotlib canvas."""
@@ -97,46 +74,52 @@ class PenEstPlot(QtW.QWidget):
         self.setLayout(self.vbl)
 
 
-UI_MainWindow = uic.loadUiType(str(
-        Path(__file__).parent.joinpath("penestapp.ui")))[0]
-class PenEstAppMain(QtW.QMainWindow, UI_MainWindow):
-    """Main (only) window for a GUI program for calculating and plotting
-    our penetrance estimations.
+class PenEstFigureGroup(QtW.QGroupBox):
+    """Widget representing the grouping of a plot and all its input widgets."""
     
-    """
-    
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
-        self.setWindowTitle("Penetrance Estimator")
-        
-        # Stats for the current plot
-        self.stats = None
-        
-        # showing an initial plot (using values that are embedded in
-        # penestapp.ui) so there's something shinyesque to look at
-        self.refreshPlot()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dataframe = None
     
     @property
-    def newstats(self):
-        """Returns the current vars and calculated stats for those vars."""
+    def newdata(self):
+        """Returns a new dataframe built from the user-provided inputs."""
         
-        modelid = self.VarModel.currentIndex() + 1  # because index starts at 0
-        alpha = literal_eval(self.VarAlpha.text())
-        beta = literal_eval(self.VarBeta.text())
+        # alpha - If user-specifiable, it's one value. Otherwise, it's a fixed
+        # list of values.
+        try:
+            alpha = self.VarAlpha.value()
+        except AttributeError:
+            alpha = [0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5]
+        # beta = Always user-specified with the same type of control
+        beta = self.VarBeta.value()
+        # s - Also always user-specified with the same type of control
         s = self.VarS.value()
-        k = literal_eval(self.VarK.text())
+        # k - Either a single value, OR a list of values
+        try:
+            k = self.VarK.value()
+        except AttributeError:
+            k = literal_eval(self.VarK.text())
+        # N - A fixed list of values only if NumSims exists.
+        # NumSims - Either it's user-specified or it doesn't exist.
+        try:
+            NumSims = self.VarRep.value()
+        except AttributeError:
+            NumSims = None
+            N = None
+        else:
+            N = [1, 2, 4, 6, 8, 10, 30, 50]
         
-        return calc_stats(modelid, k, alpha, beta, s)
+        return pe.calc_stats(alpha, beta, s, k, N, NumSims)
     
     def refreshPlot(self):
         """Plots stats for the current entered variable values."""
         
-        self.stats = self.newstats
-        self.PlotWidget.canvas.plot_data(self.stats)
+        self.dataframe = self.newdata
+        self.PlotWidget.canvas.plot_data(self.dataframe)
     
     def savePlotImage(self):
-        """Saves the current plot to an image file."""
+        """Saves our plot to an image file."""
         
         filterstring = ' '.join([f"*.{ext}" for ext in
                 self.PlotWidget.canvas.get_supported_filetypes().keys()])
@@ -154,4 +137,28 @@ class PenEstAppMain(QtW.QMainWindow, UI_MainWindow):
         
         if fileselect[0]:
             with open(fileselect[0], 'w') as outfile:
-                outfile.write(format_stats(self.stats))
+                with pe.DATA_PRINT_OPTIONS:
+                    outfile.write(self.dataframe)
+
+
+UI_MainWindow = uic.loadUiType(str(
+        Path(__file__).parent.joinpath("penestapp.ui")))[0]
+class PenEstAppMain(QtW.QMainWindow, UI_MainWindow):
+    """Main (only) window for a GUI program for calculating and plotting
+    our penetrance estimations.
+    
+    """
+    
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.setWindowTitle("Penetrance Estimator")
+        
+        # showing an initial plot (using default values that are embedded in
+        # penestapp.ui) so there's something shinyesque to look at
+        self.Figure1.refreshPlot()
+        self.Figure2.refreshPlot()
+    
+    # Should I possibly add a "Save Combined Plot" button here?
+    # Would be basically pe.generate_and_display_test_figure with plt.savefig()
+    # instead of plt.show()...
