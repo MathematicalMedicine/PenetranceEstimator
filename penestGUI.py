@@ -2,7 +2,6 @@
 
 from pathlib import Path
 from ast import literal_eval
-from enum import Enum
 
 from PyQt5 import uic, QtWidgets as QtW, QtCore
 import matplotlib
@@ -13,9 +12,6 @@ from pandas import DataFrame
 
 import penEst as pe
 from sinaplot import sinaplot
-
-#matplotlib.rcParams["text.usetex"] = True
-        # turns out this was unnecessary, woo
 
 # Canvas and MPL widget management inspired by/borrowed from
 # https://stackoverflow.com/a/44029435
@@ -78,6 +74,8 @@ class PenEstPlot(QtW.QWidget):
 class PenEstFigureGroup(QtW.QGroupBox):
     """Widget representing the grouping of a plot and all its input widgets."""
     
+    refresh_done = QtCore.Signal()
+    
     def __init__(self, parent):
         super().__init__(parent)
         self.dataframe = None
@@ -105,10 +103,9 @@ class PenEstFigureGroup(QtW.QGroupBox):
                 except AttributeError:
                     pass
     
-    def update_dataframe(self):
-        """Returns a new dataframe built from the user-provided inputs."""
+    def refreshPlot(self):
+        """Plots stats for the current entered variable values."""
         self.widgetcheck()
-        print("start")
         
         params = {}
         # alpha - If user-specifiable, it's one value. Otherwise, it's a fixed
@@ -140,24 +137,15 @@ class PenEstFigureGroup(QtW.QGroupBox):
                 labeltext="Calculating figure data. Please wait...")
         calcthread = CalcStatsThread(params, self)
         calcthread.StatsReady.connect(self.DFReadyForPlot)
-        print("r2g")
         calcthread.start()
-        print("goin")
     
     def DFReadyForPlot(self, dataframe):
         """Slot for receiving our newly updated dataframe."""
-        print("gotframe")
         self.dataframe = dataframe
-        #self.PlotWidget.canvas.figure.suptitle(
-        #        self.title()[10:].replace("𝛂", pe.ALPHA))
-        #self.PlotWidget.canvas.plot_data(self.dataframe)
-    
-    def refreshPlot(self):
-        """Plots stats for the current entered variable values."""
-        
-        print("rP start")
-        self.update_dataframe()
-        print("update done")
+        self.PlotWidget.canvas.figure.suptitle(
+                self.title()[10:].replace("𝛂", pe.ALPHA))
+        self.PlotWidget.canvas.plot_data(self.dataframe)
+        self.refresh_done.emit()
     
     def savePlotImage(self):
         """Saves our plot to an image file."""
@@ -182,29 +170,6 @@ class PenEstFigureGroup(QtW.QGroupBox):
                     outfile.write(self.dataframe)
 
 
-UI_MainWindow = uic.loadUiType(str(
-        Path(__file__).parent.joinpath("penestapp.ui")))[0]
-class PenEstAppMain(QtW.QMainWindow, UI_MainWindow):
-    """Main (only) window for a GUI program for calculating and plotting
-    our penetrance estimations.
-    
-    """
-    
-    def __init__(self):
-        super().__init__()
-        self.setupUi(self)
-        self.setWindowTitle("Penetrance Estimator")
-        
-        # showing an initial plot (using default values that are embedded in
-        # penestapp.ui) so there's something shinyesque to look at
-        self.Fig1.refreshPlot()
-        self.Fig2.refreshPlot()
-    
-    # Should I possibly add a "Save Combined Plot" button here?
-    # Would be basically pe.generate_and_display_test_figure with plt.savefig()
-    # instead of plt.show()...
-
-
 class CalcStatsThread(QtCore.QThread):
     """A separate thread for stats calculation."""
     # This exists mostly for decent progress dialogs.
@@ -226,12 +191,16 @@ class ProxiedProgressDialog(QtCore.QObject):
     apparently trying to do direct method calls in a worker thread is unsafe).
     
     """
+    # "Unsafe" is putting it mildly. *ANY* direct method calls will jam up the
+    # works and prevent the entire app from updating. Use signals for
+    # everything. EVERYTHING.
     
     # Signals needed for communication with our progress dialog.
     showtime = QtCore.Signal()
     incr_progress = QtCore.Signal(int)
     set_max_progress = QtCore.Signal(int)
     task_complete = QtCore.Signal()
+    new_message = QtCore.Signal(str)
     
     def __init__(self, mainwindow, labeltext="[progress]"):
         super().__init__()
@@ -260,6 +229,7 @@ class ProxiedProgressDialog(QtCore.QObject):
         self.incr_progress.connect(self.progdlg.setValue)
         self.set_max_progress.connect(self.progdlg.setMaximum)
         self.task_complete.connect(self.progdlg.close)
+        self.new_message.connect(self.progdlg.setLabelText)
     
     def tick(self):
         """Increments progress state, and emits a signal to the progress dialog
@@ -301,8 +271,43 @@ class ProxiedProgressDialog(QtCore.QObject):
         self._labeltext = message
         # Edges of the label get cut off on later versions of macOS, because
         # reasons, so adding padding.
-        self.progdlg.setLabelText(f"    {message}    ")
+        self.new_message.emit(f"    {message}    ")
         
     
     def killme(self):
         self.task_complete.emit()
+
+
+UI_MainWindow = uic.loadUiType(str(
+        Path(__file__).parent.joinpath("penestapp.ui")))[0]
+class PenEstAppMain(QtW.QMainWindow, UI_MainWindow):
+    """Main (only) window for a GUI program for calculating and plotting
+    our penetrance estimations.
+    
+    """
+    
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.setWindowTitle("Penetrance Estimator")
+        
+        # Showing initial plots (using values embedded in penestapp.ui) so
+        # there's something shinyesque to look at.
+        # Done with a timer arrangement so as to manipulate its place in Qt's
+        # event loop - otherwise, we end up with frozen-looking windows.
+        self.Fig2.refresh_done.connect(self._finishfirstdraw)
+        self._startdraw = QtCore.QTimer()
+        self._startdraw.setSingleShot(True)
+        self._startdraw.timeout.connect(self.Fig2.refreshPlot)
+    
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._startdraw.start(0)
+    
+    def _finishfirstdraw(self):
+        self.Fig1.refreshPlot()
+        self.Fig2.refresh_done.disconnect(self._finishfirstdraw)
+    
+    # Should I possibly add a "Save Combined Plot" button here?
+    # Would be basically pe.generate_and_display_test_figure with plt.savefig()
+    # instead of plt.show()...

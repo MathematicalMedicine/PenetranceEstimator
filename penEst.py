@@ -279,19 +279,15 @@ def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
         stats.setdefault('k', []).append(k)
         ft, fts = (2, 2)
         if SimNum is not None and N is not None:
-            asdf = (f"Calculating: alpha={alpha}, beta={beta}, "
+            progress.message = (f"Calculating: alpha={alpha}, beta={beta}, "
                     f"s={s}, k={k}, N={N}, SimNum={SimNum}")
-            print(asdf)
-            progress.message = asdf
             stats.setdefault("N", []).append(N)
             stats.setdefault("SimNum", []).append(SimNum)
             while (ft >= 2 and fts >= 2):
                 ft, fts = simNucPedigree(N, s, alpha, beta, k)
         else:
-            asdf = (f"Calculating: alpha={alpha}, beta={beta}, "
+            progress.message = (f"Calculating: alpha={alpha}, beta={beta}, "
                     f"s={s}, k={k}")
-            print(asdf)
-            progress.message = asdf
             ft, fts = exactNucPedigree(s, alpha, beta, k)
         stats.setdefault(FT, []).append(ft)
         stats.setdefault(FTS, []).append(fts)
