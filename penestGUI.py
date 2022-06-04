@@ -9,6 +9,7 @@ import matplotlib
 import seaborn as sns
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from pandas import DataFrame
 
 import penEst as pe
 from sinaplot import sinaplot
@@ -104,46 +105,59 @@ class PenEstFigureGroup(QtW.QGroupBox):
                 except AttributeError:
                     pass
     
-    def newdataframe(self):
+    def update_dataframe(self):
         """Returns a new dataframe built from the user-provided inputs."""
         self.widgetcheck()
+        print("start")
         
+        params = {}
         # alpha - If user-specifiable, it's one value. Otherwise, it's a fixed
         # list of values.
         try:
-            alpha = self.VarAlpha.value()
+            params['alphavals'] = self.VarAlpha.value()
         except AttributeError:
-            alpha = [0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5]
+            params['alphavals'] = [0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5]
         # beta = Always user-specified with the same type of control
-        beta = self.VarBeta.value()
+        params['betavals'] = self.VarBeta.value()
         # s - Also always user-specified with the same type of control
-        s = self.VarS.value()
+        params['svals'] = self.VarS.value()
         # k - Either a single value, OR a list of values
         try:
-            k = self.VarK.value()
+            params['kvals'] = self.VarK.value()
         except AttributeError:
-            k = literal_eval(self.VarK.text())
+            params['kvals'] = literal_eval(self.VarK.text())
         # N - A fixed list of values only if NumSims exists.
         # NumSims - Either it's user-specified or it doesn't exist.
         try:
-            NumSims = self.VarRep.value()
+            params['NumSims'] = self.VarRep.value()
         except AttributeError:
-            NumSims = None
-            N = None
+            params['NumSims'] = None
+            params['Nvals'] = None
         else:
-            N = [1, 2, 4, 6, 8, 10, 30, 50]
+            params['Nvals'] = [1, 2, 4, 6, 8, 10, 30, 50]
         
-        progress = ProxiedProgressDialog(self.parent().parent(),
+        params['progress'] = ProxiedProgressDialog(self,
                 labeltext="Calculating figure data. Please wait...")
-        return pe.calc_stats(alpha, beta, s, k, N, NumSims, progress=progress)
+        calcthread = CalcStatsThread(params, self)
+        calcthread.StatsReady.connect(self.DFReadyForPlot)
+        print("r2g")
+        calcthread.start()
+        print("goin")
+    
+    def DFReadyForPlot(self, dataframe):
+        """Slot for receiving our newly updated dataframe."""
+        print("gotframe")
+        self.dataframe = dataframe
+        #self.PlotWidget.canvas.figure.suptitle(
+        #        self.title()[10:].replace("𝛂", pe.ALPHA))
+        #self.PlotWidget.canvas.plot_data(self.dataframe)
     
     def refreshPlot(self):
         """Plots stats for the current entered variable values."""
         
-        self.dataframe = self.newdataframe()
-        self.PlotWidget.canvas.figure.suptitle(
-                self.title()[10:].replace("𝛂", pe.ALPHA))
-        self.PlotWidget.canvas.plot_data(self.dataframe)
+        print("rP start")
+        self.update_dataframe()
+        print("update done")
     
     def savePlotImage(self):
         """Saves our plot to an image file."""
@@ -190,6 +204,21 @@ class PenEstAppMain(QtW.QMainWindow, UI_MainWindow):
     # Would be basically pe.generate_and_display_test_figure with plt.savefig()
     # instead of plt.show()...
 
+
+class CalcStatsThread(QtCore.QThread):
+    """A separate thread for stats calculation."""
+    # This exists mostly for decent progress dialogs.
+    
+    StatsReady = QtCore.Signal(DataFrame)
+    
+    def __init__(self, params, parent):
+        super().__init__(parent)
+        
+        self.parent = parent
+        self.params = params
+    
+    def run(self):
+        self.StatsReady.emit(pe.calc_stats(**self.params))
 
 class ProxiedProgressDialog(QtCore.QObject):
     """A very simple proxy object setup for a QProgressDialog that sends it
