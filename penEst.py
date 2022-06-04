@@ -203,8 +203,13 @@ def listify_noniter(var):
     else:
         return var
 
+class FakeProgress(object):
+    """Fakes progress bar interface."""
+    def tick(self):
+        pass
+
 def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
-        to_stdout=False):
+        to_stdout=False, progress=FakeProgress()):
     """Given one or more values each for two of alpha, beta, s, and k (and one
     value each for the others) OR given one value each for all four plus number
     of families and number of simulations of families to run, calculates ftilde
@@ -261,6 +266,8 @@ def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
     
     allvars = product(alphavals, betavals, svals, kvals, Nvals,
             (None,) if NumSims is None else range(NumSims))
+    progress.total = np.prod([len(val) for val in (alphavals, betavals, svals,
+            kvals, Nvals)] + [1 if NumSims is None else NumSims, ])
     
     stats = {}
     for alpha, beta, s, k, N, SimNum in allvars:
@@ -272,14 +279,19 @@ def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
         stats.setdefault('k', []).append(k)
         ft, fts = (2, 2)
         if SimNum is not None and N is not None:
+            progress.message = (f"Calculating: alpha={alpha}, beta={beta}, "
+                    f"s={s}, k={k}, N={N}, SimNum={SimNum}")
             stats.setdefault("N", []).append(N)
             stats.setdefault("SimNum", []).append(SimNum)
             while (ft >= 2 and fts >= 2):
                 ft, fts = simNucPedigree(N, s, alpha, beta, k)
         else:
+            progress.message = (f"Calculating: alpha={alpha}, beta={beta}, "
+                    f"s={s}, k={k}")
             ft, fts = exactNucPedigree(s, alpha, beta, k)
         stats.setdefault(FT, []).append(ft)
         stats.setdefault(FTS, []).append(fts)
+        progress.tick()
     
     results = pd.DataFrame(stats)
     if to_stdout:

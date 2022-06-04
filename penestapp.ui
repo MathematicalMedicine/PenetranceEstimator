@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>825</width>
-    <height>623</height>
+    <height>698</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
      <number>4</number>
     </property>
     <item>
-     <widget class="PenEstFigureGroup" name="Figure1">
+     <widget class="PenEstFigureGroup" name="Fig1">
       <property name="title">
        <string>Figure 1 - Penetrance Estimate Distributions as a function of N</string>
       </property>
@@ -46,10 +46,22 @@
         <number>1</number>
        </property>
        <item>
-        <widget class="QWidget" name="VarsAndButtons" native="true">
+        <widget class="QWidget" name="Fig1_VarsAndButtons" native="true">
          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="leftMargin">
+           <number>4</number>
+          </property>
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="rightMargin">
+           <number>4</number>
+          </property>
+          <property name="bottomMargin">
+           <number>4</number>
+          </property>
           <item>
-           <widget class="QGroupBox" name="VarAlphaBox">
+           <widget class="QGroupBox" name="Fig1_VarAlphaBox">
             <property name="title">
              <string>Population Prevalence 𝛂</string>
             </property>
@@ -67,7 +79,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QDoubleSpinBox" name="VarAlpha">
+              <widget class="QDoubleSpinBox" name="Fig1_VarAlpha">
                <property name="decimals">
                 <number>1</number>
                </property>
@@ -86,7 +98,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="VarBetaBox">
+           <widget class="QGroupBox" name="Fig1_VarBetaBox">
             <property name="title">
              <string>f = true penetrance of VOI</string>
             </property>
@@ -104,7 +116,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QDoubleSpinBox" name="VarBeta">
+              <widget class="QDoubleSpinBox" name="Fig1_VarBeta">
                <property name="decimals">
                 <number>1</number>
                </property>
@@ -123,7 +135,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="VarSBox">
+           <widget class="QGroupBox" name="Fig1_VarSBox">
             <property name="title">
              <string>Number of sibs per family</string>
             </property>
@@ -141,7 +153,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QSpinBox" name="VarS">
+              <widget class="QSpinBox" name="Fig1_VarS">
                <property name="minimum">
                 <number>1</number>
                </property>
@@ -154,7 +166,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="VarKBox">
+           <widget class="QGroupBox" name="Fig1_VarKBox">
             <property name="title">
              <string>k</string>
             </property>
@@ -172,7 +184,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QSpinBox" name="VarK">
+              <widget class="QSpinBox" name="Fig1_VarK">
                <property name="minimum">
                 <number>-10</number>
                </property>
@@ -188,7 +200,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="VarRepBox">
+           <widget class="QGroupBox" name="Fig1_VarRepBox">
             <property name="title">
              <string>Number of sim replicates</string>
             </property>
@@ -206,7 +218,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QSpinBox" name="VarRep">
+              <widget class="QSpinBox" name="Fig1_VarRep">
                <property name="minimum">
                 <number>10</number>
                </property>
@@ -222,7 +234,20 @@
            </widget>
           </item>
           <item>
-           <widget class="QFrame" name="ButtonsFrame">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QFrame" name="Fig1_ButtonsFrame">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -231,21 +256,21 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_20">
              <item>
-              <widget class="QPushButton" name="ButtonPlot">
+              <widget class="QPushButton" name="Fig1_ButtonPlot">
                <property name="text">
                 <string>Refresh Plot</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton">
+              <widget class="QPushButton" name="Fig1_ButtonImage">
                <property name="text">
                 <string>Save plot image to file</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="ButtonSave">
+              <widget class="QPushButton" name="Fig1_ButtonSave">
                <property name="text">
                 <string>Save statistics to file</string>
                </property>
@@ -258,28 +283,24 @@
         </widget>
        </item>
        <item>
-        <widget class="PenEstPlot" name="PlotWidget" native="true">
+        <widget class="PenEstPlot" name="Fig1_PlotWidget" native="true">
          <property name="minimumSize">
           <size>
-           <width>640</width>
-           <height>256</height>
+           <width>650</width>
+           <height>325</height>
           </size>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_21"/>
         </widget>
        </item>
       </layout>
      </widget>
     </item>
     <item>
-     <widget class="PenEstFigureGroup" name="Figure2">
+     <widget class="PenEstFigureGroup" name="Fig2">
       <property name="title">
        <string>Figure 2 - Average Penetrance Estimates as a function of 𝛂</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <property name="spacing">
-        <number>1</number>
-       </property>
        <property name="leftMargin">
         <number>1</number>
        </property>
@@ -293,7 +314,7 @@
         <number>1</number>
        </property>
        <item>
-        <widget class="QWidget" name="VarsAndButtons" native="true">
+        <widget class="QWidget" name="Fig2_VarsAndButtons" native="true">
          <layout class="QVBoxLayout" name="verticalLayout_11">
           <property name="leftMargin">
            <number>4</number>
@@ -308,13 +329,31 @@
            <number>4</number>
           </property>
           <item>
-           <widget class="QGroupBox" name="VarBetaBox">
+           <widget class="QGroupBox" name="Fig2_VarBetaBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="title">
              <string>f = true penetrance of VOI</string>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout">
+             <property name="leftMargin">
+              <number>6</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>2</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
-              <widget class="QDoubleSpinBox" name="VarBeta">
+              <widget class="QDoubleSpinBox" name="Fig2_VarBeta">
                <property name="decimals">
                 <number>1</number>
                </property>
@@ -333,7 +372,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="VarSBox">
+           <widget class="QGroupBox" name="Fig2_VarSBox">
             <property name="title">
              <string>Number of sibs per family</string>
             </property>
@@ -351,7 +390,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QSpinBox" name="VarS">
+              <widget class="QSpinBox" name="Fig2_VarS">
                <property name="minimum">
                 <number>1</number>
                </property>
@@ -364,7 +403,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="VarKBox">
+           <widget class="QGroupBox" name="Fig2_VarKBox">
             <property name="title">
              <string>k (min -10, max 10)</string>
             </property>
@@ -382,7 +421,13 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QLineEdit" name="VarK">
+              <widget class="QLineEdit" name="Fig2_VarK">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="text">
                 <string>-1, 0, 1, 2</string>
                </property>
@@ -392,7 +437,20 @@
            </widget>
           </item>
           <item>
-           <widget class="QFrame" name="ButtonsFrame">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QFrame" name="Fig2_ButtonsFrame">
             <property name="frameShape">
              <enum>QFrame::StyledPanel</enum>
             </property>
@@ -401,21 +459,21 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_17">
              <item>
-              <widget class="QPushButton" name="ButtonPlot">
+              <widget class="QPushButton" name="Fig2_ButtonPlot">
                <property name="text">
                 <string>Refresh Plot</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton">
+              <widget class="QPushButton" name="Fig2_pushButton">
                <property name="text">
                 <string>Save plot image to file</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="ButtonSave">
+              <widget class="QPushButton" name="Fig2_ButtonSave">
                <property name="text">
                 <string>Save statistics to file</string>
                </property>
@@ -428,14 +486,13 @@
         </widget>
        </item>
        <item>
-        <widget class="PenEstPlot" name="PlotWidget" native="true">
+        <widget class="PenEstPlot" name="Fig2_PlotWidget" native="true">
          <property name="minimumSize">
           <size>
-           <width>640</width>
-           <height>256</height>
+           <width>650</width>
+           <height>325</height>
           </size>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout_10"/>
         </widget>
        </item>
       </layout>
@@ -466,9 +523,9 @@
  <resources/>
  <connections>
   <connection>
-   <sender>ButtonPlot</sender>
+   <sender>Fig2_ButtonPlot</sender>
    <signal>clicked()</signal>
-   <receiver>Figure2</receiver>
+   <receiver>Fig2</receiver>
    <slot>refreshPlot()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -482,9 +539,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>Fig2_pushButton</sender>
    <signal>clicked()</signal>
-   <receiver>Figure2</receiver>
+   <receiver>Fig2</receiver>
    <slot>savePlotImage()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -498,9 +555,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>ButtonSave</sender>
+   <sender>Fig2_ButtonSave</sender>
    <signal>clicked()</signal>
-   <receiver>Figure2</receiver>
+   <receiver>Fig2</receiver>
    <slot>saveStatsFile()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -514,9 +571,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>ButtonPlot</sender>
+   <sender>Fig1_ButtonPlot</sender>
    <signal>clicked()</signal>
-   <receiver>Figure1</receiver>
+   <receiver>Fig1</receiver>
    <slot>refreshPlot()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -530,9 +587,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>Fig1_ButtonImage</sender>
    <signal>clicked()</signal>
-   <receiver>Figure1</receiver>
+   <receiver>Fig1</receiver>
    <slot>savePlotImage()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -546,9 +603,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>ButtonSave</sender>
+   <sender>Fig1_ButtonSave</sender>
    <signal>clicked()</signal>
-   <receiver>Figure1</receiver>
+   <receiver>Fig1</receiver>
    <slot>saveStatsFile()</slot>
    <hints>
     <hint type="sourcelabel">
