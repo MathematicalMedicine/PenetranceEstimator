@@ -32,3 +32,9 @@ Current Potential Gotchas
 * _k_ for Figure 2 takes a comma-separated list of values. This is not presently properly validated, so incorrect input will crash the program.
 * As _s_ increases (particularly as it goes above 5), refreshes slow down considerably because of the calculation time required. We intend to add a warning dialog to indicate this.
 * The default (on launch) number of sim replicates for Figure 1 is set at 100. On older computers this may take a while to finish (minutes or more).
+
+
+Acknowledgements
+----------------
+
+[Matthew Parker](https://github.com/mparker2) for the "sinaplot" code.
