@@ -36,7 +36,7 @@ class PenEstCanvas(FigureCanvasQTAgg):
         
         # Are we Figure 1 or Figure 2?
         try:
-            df['SimNum']
+            df['RepNum']
         except KeyError:
             # Lineplot (figure 2)
             sns.lineplot(data=df.pivot(pe.ALPHA, "k", pe.FT),
@@ -95,7 +95,7 @@ class PenEstFigureGroup(QtW.QGroupBox):
             widgetstore = self.parent().parent()
             name = self.objectName()
             
-            for widgettype in ("PlotWidget", "VarAlpha", "VarBeta", "VarS",
+            for widgettype in ("PlotWidget", "VarAlpha", "VarF", "VarS",
                     "VarK", "VarRep"):
                 try:
                     setattr(self, widgettype,
@@ -114,8 +114,8 @@ class PenEstFigureGroup(QtW.QGroupBox):
             params['alphavals'] = self.VarAlpha.value()
         except AttributeError:
             params['alphavals'] = [0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5]
-        # beta = Always user-specified with the same type of control
-        params['betavals'] = self.VarBeta.value()
+        # f = Always user-specified with the same type of control
+        params['fvals'] = self.VarF.value()
         # s - Also always user-specified with the same type of control
         params['svals'] = self.VarS.value()
         # k - Either a single value, OR a list of values
@@ -123,12 +123,12 @@ class PenEstFigureGroup(QtW.QGroupBox):
             params['kvals'] = self.VarK.value()
         except AttributeError:
             params['kvals'] = literal_eval(self.VarK.text())
-        # N - A fixed list of values only if NumSims exists.
-        # NumSims - Either it's user-specified or it doesn't exist.
+        # N - A fixed list of values only if NumReps exists.
+        # NumReps - Either it's user-specified or it doesn't exist.
         try:
-            params['NumSims'] = self.VarRep.value()
+            params['NumReps'] = self.VarRep.value()
         except AttributeError:
-            params['NumSims'] = None
+            params['NumReps'] = None
             params['Nvals'] = None
         else:
             params['Nvals'] = [1, 2, 4, 6, 8, 10, 30, 50]
@@ -160,15 +160,23 @@ class PenEstFigureGroup(QtW.QGroupBox):
             self.PlotWidget.canvas.figure.savefig(fileselect[0])
     
     def saveStatsFile(self):
-        """Saves the current plotted data to a text file."""
+        """Saves a summary of the plotted data to a text file."""
         
         fileselect = QtW.QFileDialog.getSaveFileName(self,
                 "Save Stats", filter="Text files (*.txt)")
         
         if fileselect[0]:
+            pe.output_summarystats(self.dataframe, fileselect[0])
+    
+    def saveRawOutput(self):
+        """Saves the current plotted data to a text file."""
+        
+        fileselect = QtW.QFileDialog.getSaveFileName(self,
+                "Save Raw Output", filter="CSV files (*.csv)")
+        
+        if fileselect[0]:
             with open(fileselect[0], 'w') as outfile:
-                with pe.DATA_PRINT_OPTIONS:
-                    outfile.write(self.dataframe)
+                self.dataframe.to_csv(outfile)
 
 
 class CalcStatsThread(QtCore.QThread):

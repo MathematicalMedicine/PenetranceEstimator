@@ -98,7 +98,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QGroupBox" name="Fig1_VarBetaBox">
+           <widget class="QGroupBox" name="Fig1_VarFBox">
             <property name="title">
              <string>f = true penetrance of VOI</string>
             </property>
@@ -116,7 +116,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QDoubleSpinBox" name="Fig1_VarBeta">
+              <widget class="QDoubleSpinBox" name="Fig1_VarF">
                <property name="decimals">
                 <number>1</number>
                </property>
@@ -272,7 +272,14 @@
              <item>
               <widget class="QPushButton" name="Fig1_ButtonSave">
                <property name="text">
-                <string>Save statistics to file</string>
+                <string>Save summary statistics</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton">
+               <property name="text">
+                <string>Save raw output</string>
                </property>
               </widget>
              </item>
@@ -329,7 +336,7 @@
            <number>4</number>
           </property>
           <item>
-           <widget class="QGroupBox" name="Fig2_VarBetaBox">
+           <widget class="QGroupBox" name="Fig2_VarFBox">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
               <horstretch>0</horstretch>
@@ -353,7 +360,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QDoubleSpinBox" name="Fig2_VarBeta">
+              <widget class="QDoubleSpinBox" name="Fig2_VarF">
                <property name="decimals">
                 <number>1</number>
                </property>
@@ -475,7 +482,14 @@
              <item>
               <widget class="QPushButton" name="Fig2_ButtonSave">
                <property name="text">
-                <string>Save statistics to file</string>
+                <string>Save summary statistics</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="pushButton_2">
+               <property name="text">
+                <string>Save raw output</string>
                </property>
               </widget>
              </item>
@@ -517,6 +531,7 @@
     <slot>refreshPlot()</slot>
     <slot>savePlotImage()</slot>
     <slot>saveStatsFile()</slot>
+    <slot>saveRawOutput()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -529,8 +544,8 @@
    <slot>refreshPlot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>131</x>
-     <y>619</y>
+     <x>148</x>
+     <y>590</y>
     </hint>
     <hint type="destinationlabel">
      <x>174</x>
@@ -546,7 +561,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>148</x>
-     <y>648</y>
+     <y>619</y>
     </hint>
     <hint type="destinationlabel">
      <x>376</x>
@@ -562,7 +577,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>148</x>
-     <y>677</y>
+     <y>648</y>
     </hint>
     <hint type="destinationlabel">
      <x>408</x>
@@ -577,8 +592,8 @@
    <slot>refreshPlot()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>142</x>
-     <y>271</y>
+     <x>148</x>
+     <y>257</y>
     </hint>
     <hint type="destinationlabel">
      <x>247</x>
@@ -594,7 +609,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>148</x>
-     <y>300</y>
+     <y>281</y>
     </hint>
     <hint type="destinationlabel">
      <x>310</x>
@@ -609,12 +624,44 @@
    <slot>saveStatsFile()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>146</x>
-     <y>329</y>
+     <x>148</x>
+     <y>305</y>
     </hint>
     <hint type="destinationlabel">
      <x>415</x>
      <y>7</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Fig1</receiver>
+   <slot>saveRawOutput()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>81</x>
+     <y>319</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>533</x>
+     <y>4</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_2</sender>
+   <signal>clicked()</signal>
+   <receiver>Fig2</receiver>
+   <slot>saveRawOutput()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>77</x>
+     <y>662</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>581</x>
+     <y>356</y>
     </hint>
    </hints>
   </connection>

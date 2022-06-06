@@ -16,14 +16,14 @@ ftildestar penetrance estimates.
 %    That is, the first kid is '12' and affected.
 %  Apply the k-model in the Hodge(1998) paper page1218.
 %  Prob(family ascertained | r affected) = const * (r^k + t)
-%  HetModel, prob(aff|12) = alpha + beta - alpha * beta 
+%  HetModel, prob(aff|12) = alpha + f - alpha * f 
 %     where r = # of kids with 'aff' and '12'
 %     Use const = 1/1000 and k= -1,0, 1, 2
 
 %Inputs
 %   s: # of kids
 %   alpha: prob(aff | '11')
-%    beta: prob(aff | '12')
+%       f: prob(aff | '12')
 %Outputs
 %  ftilde
 %  ftildestar
@@ -45,7 +45,6 @@ from sinaplot import sinaplot
 FT = r"$\tilde{f}$"
 FTS = r"$\tilde{f}^*$"
 ALPHA = r"$\alpha$"
-BETA = r"$\beta$"
 
 # Shorthand for our data printing options context.
 DATA_PRINT_OPTIONS = pd.option_context(
@@ -56,7 +55,7 @@ DATA_PRINT_OPTIONS = pd.option_context(
 def nCr(n,r):
     return factorial(n) / factorial(r) / factorial(n-r)
 
-def simNucPedigree(N, s, alpha, beta, kvalue):
+def simNucPedigree(N, s, alpha, f, kvalue):
     # simulate Pedigree
     # FIXME: Look into ways of optimizing this because it seems to be repeating
     # work a lot.
@@ -66,7 +65,7 @@ def simNucPedigree(N, s, alpha, beta, kvalue):
     else :
         const = 1/1000
         
-    hetProbaff= alpha + beta - alpha * beta
+    hetProbaff= alpha + f - alpha * f
 
     Aff12 = 0.0
     Aff12NoProb = 0.0
@@ -123,11 +122,11 @@ def simNucPedigree(N, s, alpha, beta, kvalue):
 
     return ftilde, ftildestar
 
-def exactNucPedigree(s, alpha, beta, kvalue):
+def exactNucPedigree(s, alpha, f, kvalue):
     # FIXME: Look into ways of optimizing this as well, for the same reasons as
     # above.
     
-    hetProbaff= alpha + beta - alpha * beta
+    hetProbaff= alpha + f - alpha * f
     const = 0.001
     
     #loop over all possible cases of phenotypes for the s-1 kids
@@ -165,9 +164,9 @@ def exactNucPedigree(s, alpha, beta, kvalue):
                     
                 else: # % '12'
                     if PTs[k]==1 :
-                        probPT_GT = probPT_GT * (1 - hetProbaff) #%(1-beta)
+                        probPT_GT = probPT_GT * (1 - hetProbaff) #%(1-f)
                     else:
-                        probPT_GT = probPT_GT * hetProbaff #%* beta
+                        probPT_GT = probPT_GT * hetProbaff #%* f
             temp =10*np.array(PTs)+np.array(GTs)
             r = sum(p == 22 for p in temp) # sum((PTs==2)&(GTs==2))
             t = sum(p == 2 for p in PTs)
@@ -208,9 +207,9 @@ class FakeProgress(object):
     def tick(self):
         pass
 
-def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
+def calc_stats(alphavals, fvals, svals, kvals, Nvals=None, NumReps=None,
         to_stdout=False, progress=FakeProgress()):
-    """Given one or more values each for two of alpha, beta, s, and k (and one
+    """Given one or more values each for two of alpha, f, s, and k (and one
     value each for the others) OR given one value each for all four plus number
     of families and number of simulations of families to run, calculates ftilde
     and ftildestar for all values of those variables and returns them in a
@@ -228,19 +227,19 @@ def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
     # From a data structure perspective, though, this can be summed up as
     # "we have two iterables and some constants and they're used to generate a
     # pair of lists of values".
-    # For mode 1, the iterables are Nvals and range(NumSims).
+    # For mode 1, the iterables are Nvals and range(NumReps).
     # For mode 2, the iterables are kvals and alphavals.
     # So we make the following assumptions:
-    # * If Nvals and/or NumSims are None, we're using operating mode 2 above.
+    # * If Nvals and/or NumReps are None, we're using operating mode 2 above.
     # * Otherwise, we're using mode 1.
     alphavals = listify_noniter(alphavals)
     for alphaval in alphavals:
         if alphaval < 0 or alphaval > 1:
             raise ValueError("alpha must be between 0 and 1")
-    betavals = listify_noniter(betavals)
-    for betaval in betavals:
-        if betaval < 0 or betaval > 1:
-            raise ValueError("beta must be between 0 and 1")
+    fvals = listify_noniter(fvals)
+    for fval in fvals:
+        if fval < 0 or fval > 1:
+            raise ValueError("f must be between 0 and 1")
     svals = listify_noniter(svals)
     for sval in svals:
         if sval < 2:
@@ -253,42 +252,43 @@ def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
     for Nval in Nvals:
         if Nval is not None and Nval < 1:
             raise ValueError("N must be a positive integer")
-    if NumSims is not None:
-        if NumSims < 10:
-            raise ValueError("NumSims must be greater than or equal to 10")
+    if NumReps is not None:
+        if NumReps < 10:
+            raise ValueError("NumReps must be greater than or equal to 10")
     
-    itercount = [1 for vals in (alphavals, betavals, svals, kvals, Nvals)
+    itercount = [1 for vals in (alphavals, fvals, svals, kvals, Nvals)
             if len(vals) > 1]
-    if NumSims is not None:
-        itercount.append(1) # NumSims is always an iterator
+    if NumReps is not None:
+        itercount.append(1) # NumReps is always an iterator
     if len(itercount) > 2:
         raise ValueError("only 2 vars may have multiple values")
     
-    allvars = product(alphavals, betavals, svals, kvals, Nvals,
-            (None,) if NumSims is None else range(NumSims))
-    progress.total = np.prod([len(val) for val in (alphavals, betavals, svals,
-            kvals, Nvals)] + [1 if NumSims is None else NumSims, ])
+    # k gets reversed so the legend appears in the right order
+    allvars = product(alphavals, fvals, svals, reversed(kvals), Nvals,
+            (None,) if NumReps is None else range(NumReps))
+    progress.total = np.prod([len(val) for val in (alphavals, fvals, svals,
+            kvals, Nvals)] + [1 if NumReps is None else NumReps, ])
     
     stats = {}
-    for alpha, beta, s, k, N, SimNum in allvars:
-        #print(f"alpha={alpha}, beta={beta}, s={s}, k={k}, N={N}, "
-        #        f"SimNum={SimNum}")
+    for alpha, f, s, k, N, RepNum in allvars:
+        #print(f"alpha={alpha}, f={f}, s={s}, k={k}, N={N}, "
+        #        f"RepNum={RepNum}")
         stats.setdefault(ALPHA, []).append(alpha)
-        stats.setdefault(BETA, []).append(beta)
+        stats.setdefault('f', []).append(f)
         stats.setdefault('s', []).append(s)
         stats.setdefault('k', []).append(k)
         ft, fts = (2, 2)
-        if SimNum is not None and N is not None:
-            progress.message = (f"Calculating: alpha={alpha}, beta={beta}, "
-                    f"s={s}, k={k}, N={N}, SimNum={SimNum}")
+        if RepNum is not None and N is not None:
+            progress.message = (f"Calculating: α={alpha}, f={f}, "
+                    f"s={s}, k={k}, N={N}, RepNum={RepNum}")
             stats.setdefault("N", []).append(N)
-            stats.setdefault("SimNum", []).append(SimNum)
+            stats.setdefault("RepNum", []).append(RepNum)
             while (ft >= 2 and fts >= 2):
-                ft, fts = simNucPedigree(N, s, alpha, beta, k)
+                ft, fts = simNucPedigree(N, s, alpha, f, k)
         else:
-            progress.message = (f"Calculating: alpha={alpha}, beta={beta}, "
+            progress.message = (f"Calculating: alpha={alpha}, f={f}, "
                     f"s={s}, k={k}")
-            ft, fts = exactNucPedigree(s, alpha, beta, k)
+            ft, fts = exactNucPedigree(s, alpha, f, k)
         stats.setdefault(FT, []).append(ft)
         stats.setdefault(FTS, []).append(fts)
         progress.tick()
@@ -299,6 +299,61 @@ def calc_stats(alphavals, betavals, svals, kvals, Nvals=None, NumSims=None,
             print(results)
     
     return results
+
+def output_summarystats(df, filename):
+    """Given one of our figure dataframes and a filename, outputs our summary
+    stats info to that file.
+    
+    """
+    
+    # The "summary stats" for "as a function of alpha" (fig2) pretty much are a
+    # specialized form of the raw output. For the estimate distributions based
+    # on number of families, though, we have actual summarization. So we need
+    # to figure out which is which.
+    
+    try:
+        df['N']
+    except KeyError:
+        # "as a function of alpha" - no summarization, just formatting
+        ftdf, ftsdf = df.pivot('k', ALPHA, FT), df.pivot('k', ALPHA, FTS)
+        with open(filename, "w") as outfile:
+            with DATA_PRINT_OPTIONS:
+                outfile.write("\n\n".join((
+                        # lack of commas for first 3 lines is deliberate
+                        "==================================\n"
+                        "Figure2. Statistics\n"
+                        "==================================\n"
+                        f"f={df['f'][0]}, s={df['s'][0]}",
+                        f"f_tilde\n{df.pivot('k', ALPHA, FT)}",
+                        f"f_tilde_star\n{df.pivot('k', ALPHA, FTS)}"
+                        )))
+    else:
+        # distribution plot - we need to actually summarize :)
+        base_ft = df.pivot('RepNum', 'N', FT)
+        base_fts = df.pivot('RepNum', 'N', FTS)
+        ft_stats = pd.DataFrame({
+                "mean": base_ft.mean(0),
+                "std": base_ft.std(0),
+                "med": base_ft.median(0)
+                }).transpose()
+        fts_stats = pd.DataFrame({
+                "mean": base_fts.mean(0),
+                "std": base_fts.std(0),
+                "med": base_fts.median(0)
+                }).transpose()
+        with open(filename, "w") as outfile:
+            with DATA_PRINT_OPTIONS:
+                outfile.write("\n\n".join((
+                        # lack of commas for first 5 lines is deliberate
+                        "==================================\n"
+                        "Figure1. Statistics\n"
+                        "==================================\n"
+                        f"alpha={df[ALPHA][0]}, f={df['f'][0]}, "
+                        f"s={df['s'][0]}, k={df['k'][0]}, "
+                        f"NumReps={df['RepNum'].iat[-1] + 1}",
+                        f"f_tilde\n{ft_stats}",
+                        f"f_tilde_star\n{fts_stats}"
+                        )))
 
 def generate_and_display_test_figure(fig1df, fig2df):
     """Given two dataframes - one with our N values and our two sets of Y-axis
@@ -345,19 +400,19 @@ if __name__ == "__main__":
     # Default "test" input values
     # Figure 1 which goes to the 1st row
     alpha = 0.0
-    beta= 0.5
+    f = 0.5
     s = 2
     k = 1
     N = [1, 2, 4, 6, 8, 10, 30, 50]
-    NumSims = 25
-    fig1df = calc_stats(alpha, beta, s, k, N, NumSims)
+    NumReps = 100
+    fig1df = calc_stats(alpha, f, s, k, N, NumReps)
     
     # Figure 2 which goes to the 2nd row.
     alpha = [0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5]
             # now up to 0.5 and these values are fixed.  5/30/2022
-    beta = 0.5
+    f = 0.5
     s = 3
     k = [-1, 0, 1, 2]
-    fig2df = calc_stats(alpha, beta, s, k)
+    fig2df = calc_stats(alpha, f, s, k)
     
     generate_and_display_test_figure(fig1df, fig2df)
