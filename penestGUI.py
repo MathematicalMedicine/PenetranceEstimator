@@ -65,8 +65,8 @@ class PenEstCanvas(FigureCanvasQTAgg):
         self.ax_ftildestar.set_ylabel(pe.FTS, rotation=0)
         self.ax_ftilde.set_ylim(ymin=0, ymax=1)
         self.ax_ftildestar.set_ylim(ymin=0, ymax=1)
-        self.ax_ftilde.axhline(0.5, alpha=0.5, dashes=(5,2))
-        self.ax_ftildestar.axhline(0.5, alpha=0.5, dashes=(5,2))
+        self.ax_ftilde.axhline(df['f'][0], alpha=0.5, dashes=(5,2))
+        self.ax_ftildestar.axhline(df['f'][0], alpha=0.5, dashes=(5,2))
         
         self.draw()
 

@@ -379,26 +379,26 @@ def generate_and_display_test_figure(fig1df, fig2df):
             violin=False)
     plt.ylabel(FT, rotation=0)
     plt.ylim([0,1])
-    plt.axhline(0.5, alpha=0.5, dashes=(5,2))
+    plt.axhline(fig1df['f'][0], alpha=0.5, dashes=(5,2))
     
     plt.subplot(2, 2, 2)
     sinaplot(x="N", y=FTS, data=fig1df, edgecolor="black", alpha=.5,
             violin=False)
     plt.ylabel(FTS, rotation=0)
     plt.ylim([0,1])
-    plt.axhline(0.5, alpha=0.5, dashes=(5,2))
+    plt.axhline(fig1df['f'][0], alpha=0.5, dashes=(5,2))
     
     plt.subplot(2, 2, 3)
     sns.lineplot(data=fig2df.pivot(ALPHA, "k", FT), markers=True)
     plt.ylabel(FT, rotation=0)
     plt.ylim([0,1])
-    plt.axhline(0.5, alpha=0.5, dashes=(5,2))
+    plt.axhline(fig2df['f'][0], alpha=0.5, dashes=(5,2))
     
     plt.subplot(2, 2, 4)
     sns.lineplot(data=fig2df.pivot(ALPHA, "k", FTS), markers=True)
     plt.ylabel(FTS, rotation=0)
     plt.ylim([0,1])
-    plt.axhline(0.5, alpha=0.5, dashes=(5,2))
+    plt.axhline(fig2df['f'][0], alpha=0.5, dashes=(5,2))
     
     plt.tight_layout()
     plt.show()
@@ -418,7 +418,7 @@ if __name__ == "__main__":
     # Figure 2 which goes to the 2nd row.
     alpha = [0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5]
             # now up to 0.5 and these values are fixed.  5/30/2022
-    f = 0.5
+    f = 0.6
     s = 3
     k = [-1, 0, 1, 2]
     fig2df = calc_stats(alpha, f, s, k)
