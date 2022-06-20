@@ -14,7 +14,7 @@
 from pathlib import Path
 from ast import literal_eval
 
-from PyQt5 import uic, QtWidgets as QtW, QtCore
+from PyQt5 import uic, QtWidgets as QtW, QtCore, QtGui
 import matplotlib
 import seaborn as sns
 from matplotlib.figure import Figure
@@ -75,7 +75,6 @@ class PenEstPlot(QtW.QWidget):
     
     def __init__(self, parent):
         super().__init__(parent)
-        # FIXME: at this point, remove the stylesheet
         self.canvas = PenEstCanvas()
         self.vbl = QtW.QVBoxLayout()
         self.vbl.addWidget(self.canvas)
@@ -113,6 +112,13 @@ class PenEstFigureGroup(QtW.QGroupBox):
                             getattr(widgetstore, f"{name}_{widgettype}"))
                 except AttributeError:
                     pass
+            
+            # If VarK is a QLineEdit, we need to set a proper validator.
+            try:
+                self.VarK.value()
+            except AttributeError:
+                self.VarKValidator = ListOfIntsValidator(self, -10, 10)
+                self.VarK.setValidator(self.VarKValidator)
     
     def refreshPlot(self):
         """Plots stats for the current entered variable values."""
@@ -292,7 +298,6 @@ class ProxiedProgressDialog(QtCore.QObject):
         # Edges of the label get cut off on later versions of macOS, because
         # reasons, so adding padding.
         self.new_message.emit(f"    {message}    ")
-        
     
     def killme(self):
         self.task_complete.emit()
@@ -331,3 +336,38 @@ class PenEstAppMain(QtW.QMainWindow, UI_MainWindow):
     # Should I possibly add a "Save Combined Plot" button here?
     # Would be basically pe.generate_and_display_test_figure with plt.savefig()
     # instead of plt.show()...
+
+
+class ListOfIntsValidator(QtGui.QValidator):
+    """Validates that we have a proper list of ints."""
+    # Needed for VarK when it's a QLineEdit
+    
+    def __init__(self, parent, intmin, intmax):
+        super().__init__(parent)
+        
+        self.intmin = intmin
+        self.intmax = intmax
+    
+    def validate(self, checkstring, strpos):
+        """Returns whether or not our string is valid."""
+        
+        try:
+            candidatevals = literal_eval(checkstring)
+        except (ValueError, SyntaxError):
+            #print("literal_eval failed")
+            return (QtGui.QValidator.Invalid, checkstring, strpos)
+        else:
+            for val in candidatevals:
+                #print(f"testing val {val}")
+                if not isinstance(val, int):
+                    #print("not an int")
+                    return (QtGui.QValidator.Invalid, checkstring, strpos)
+                elif val < self.intmin:
+                    #print(f"below minimum {self.intmin}")
+                    return (QtGui.QValidator.Invalid, checkstring, strpos)
+                elif val > self.intmax:
+                    #print(f"above maximum {self.intmax}")
+                    return (QtGui.QValidator.Invalid, checkstring, strpos)
+            #print("all is good")
+            return (QtGui.QValidator.Acceptable, checkstring, strpos)
+
