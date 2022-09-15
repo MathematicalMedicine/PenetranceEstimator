@@ -75,8 +75,8 @@ def simNucPedigree(N, s, alpha, f, kvalue):
         
     hetProbaff= alpha + f - alpha * f
 
-    Aff12 = 0.0
-    Aff12NoProb = 0.0
+    TildeRatios= [0] * N 
+    TildeStarRatios= [0] * N 
     UnAff12 = 0.0
     
     famId =0
@@ -110,22 +110,30 @@ def simNucPedigree(N, s, alpha, f, kvalue):
             probAsct =   0
         
         if random.random() < probAsct:
-            Aff12 = Aff12 + r
             temp =10*np.array(PTs)+np.array(GTs)
             UnAff12 = UnAff12 + sum(p == 12 for p in temp)
             if r > 0 :
-                Aff12NoProb = Aff12NoProb + r - 1
+                den = (r-1 + sum(p == 12 for p in temp) )
+                if den > 0 :
+                    TildeRatios[famId]= (r-1)/ den
+                else:
+                    TildeRatios[famId]= -1  #TildeRatios[famId]=(r-1)/(r-1 + sum(p == 12 for p in temp) )
+            TildeStarRatios[famId]= r/(r + sum(p == 12 for p in temp) )
             famId = famId + 1
-    if (Aff12NoProb +UnAff12) <=0:
-        ftilde = 2
+
+    ftilde=0
+    for p in TildeRatios:
+        if p >=0 :
+            ftilde= ftilde +p
+
+    countNonNegative = sum(p >=0 for p in TildeRatios)
+    if countNonNegative >0:
+        ftilde= ftilde /sum(p >=0 for p in TildeRatios) #ftilde= np.mean(TildeRatios[TildeRatios>=0])
     else:
-        ftilde =  Aff12NoProb/(Aff12NoProb +UnAff12)
-    if (Aff12 +UnAff12) <=0:
-        ftildestar = 2
-    else:
-        ftildestar =  Aff12/(Aff12 +UnAff12)
+        ftilde =float("NaN")
+    ftildestar = np.mean(TildeStarRatios)  
         
-    #print (N, s, GTs, PTs, Aff12NoProb, UnAff12, Aff12,r, t, ftilde , ftildestar)
+    #print (N, s, ftilde , ftildestar)
     #%sprintf('Aff12=%f Aff12NoProb=%f UnAff12=%f   ftilde = %f  ftildestar = %f',Aff12 ,Aff12NoProb, UnAff12, ftilde,ftildestar )
 
     return ftilde, ftildestar
@@ -141,16 +149,20 @@ def exactNucPedigree(s, alpha, f, kvalue):
     pools = sorted(list(set(
             permutations([1 for x in range(s)] + [2 for x in range(s)], s))))
     numRows=len(pools)
-    #print pools
     GTs=[1] * s
     totalProbGT = [0] * s  #zeros(s,1)
-    Aff12 = 0.0
-    Aff12NoProb = 0.0
-    UnAff12 = 0.0
+    ftildes = []   #[[0]*numRows]*s
+    ftildeStars = []  #[[0]*numRows]*s
+    probFamilies = [] 
     
     for numkids in range(s):  # we don't need the case for no kid has '12', so we start from at least one '12' case
         
         GTs[numkids]=2
+
+        ftilderow=[]
+        ftildeStarrow=[]
+
+        #print("   numkids ", numkids, "GTs", GTs)
         #otherwise, there are 2 phenotype cases
         #GTs
         probGT=float(nCr(s,numkids+1))/pow(2,s)
@@ -162,6 +174,7 @@ def exactNucPedigree(s, alpha, f, kvalue):
         for j in range(numRows):
             PTs = pools[j]
         
+            #print("   numkis ",  numkids, " j is " ,j, [GTs, PTs ])
             probPT_GT = 1  #% prob of PT given GT
             for k in range(s):
                 if GTs[k]==1: # % '11'
@@ -185,16 +198,37 @@ def exactNucPedigree(s, alpha, f, kvalue):
                 probAsct =   0 #%const * t   %  0
                 
             totalProb[j] =   probAsct* probGT*probPT_GT
-            Aff12 = Aff12 + r*totalProb[j]
+            curUnAff12 = sum(p == 12 for p in temp)
+            den = r-1 + curUnAff12
+            #print( " r is ", r, " den is ", den)
             if r>0:
-                Aff12NoProb = Aff12NoProb+ (r-1)*totalProb[j]
+                if den <= 0 :
+                    ftilderow.append(-1)  
+                else:
+                    fract=(r-1)/den
+                    ftilderow.append(fract)   
+            else:
+                ftilderow.append(0)  
+            ftildeStarrow.append(r/( r + curUnAff12))    #ftildeStars[numkids][j] = r/( r + curUnAff12)
             
-            UnAff12 = UnAff12 + sum(p == 12 for p in temp)*probAsct* probGT*probPT_GT
-        
+        ftildes.append(ftilderow)  
+        ftildeStars.append(ftildeStarrow)                         
+        probFamilies.append(totalProb)
         totalProbGT[numkids]= sum(totalProb)
-    ftilde =  Aff12NoProb/(Aff12NoProb +UnAff12)
-    ftildestar =  Aff12/(Aff12 +UnAff12)
-    #%sprintf('Aff12=%f Aff12NoProb=%f UnAff12=%f   ftilde = %f  ftildestar = %f',Aff12 ,Aff12NoProb, UnAff12, ftilde,ftildestar )
+
+        #print("ftilde after numkids ", numkids)
+        #print(ftilderow)
+
+
+    probFamilies = np.asarray(probFamilies).flatten()
+
+    ftildes = np.asarray(ftildes).flatten()
+
+    totalProbAsct = probFamilies.sum()
+    probFamiliesStripped = probFamilies[ftildes>=0]
+    ftildesStripped = ftildes[ftildes>=0]
+    ftilde = np.dot(ftildesStripped , probFamiliesStripped) / probFamiliesStripped.sum()
+    ftildestar = np.dot(np.asarray(ftildeStars).flatten() , probFamilies) / totalProbAsct
 
     return ftilde, ftildestar
 
